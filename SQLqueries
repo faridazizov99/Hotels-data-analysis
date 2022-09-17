@@ -1,0 +1,60 @@
+-- Hypothesis #1: the revenue of the hotel grows year by year
+
+/* Since the data given for the year 2020 is limited with month August, in order to find out if the revenue
+is growing year by year I decided to calculate the revenues of 2018, and 2019 until August, and compare them to the revenue of 2020.*/
+
+with hotels as (
+select * from HotelDB..[year2018]
+union
+select * from HotelDB..[year2019]
+union
+select * from HotelDB..[year2020])
+
+select arrival_date_year, round(SUM((stays_in_week_nights+stays_in_weekend_nights)*adr),4) as revenue
+from hotels
+where arrival_date_month not like '%September%' 
+and arrival_date_month not like '%October%' 
+and arrival_date_month not like '%November%' 
+and arrival_date_month not like '%December%'
+group by arrival_date_year
+
+/*OUTCOME: Since the revenue of 2018 and 2019 in period of January-August is lower than in same period of 2020, 
+and September-December period made up 52.26% and only 36.41% of revenue in 2018 and 2019 accordingly, I can assume that 
+the hypothesis is correct, and the revenue is indeed increasing year by year. */
+
+-- Hypothesis #2: the revenue of each hotels grows year by year
+
+with hotels as (
+select * from HotelDB..[year2018]
+union
+select * from HotelDB..[year2019]
+union
+select * from HotelDB..[year2020])
+
+select hotel, arrival_date_year, round(SUM((stays_in_week_nights+stays_in_weekend_nights)*adr),4) as revenue
+from hotels
+where arrival_date_month not like '%September%' 
+and arrival_date_month not like '%October%' 
+and arrival_date_month not like '%November%' 
+and arrival_date_month not like '%December%'
+group by arrival_date_year, hotel
+
+/*OUTCOME: The revenue of the 'City Hotel' is rapidly growing, while the revenue of 'Resort Hotel' significantly increased in 2019,
+but is facing a slight decline in 2020. The actual conclusion on the Resort Hotel's revenue in 2020 could be concluded only with the
+missing September-January period.*/
+
+
+-- Joining Market Segments and Meal Costs tables to the database
+
+with hotels as (
+select * from HotelDB..[year2018]
+union
+select * from HotelDB..[year2019]
+union
+select * from HotelDB..[year2020])
+
+select * from hotels
+left join market_segment$
+on hotels.market_segment = market_segment$.market_segment
+left join meal_cost$ 
+on meal_cost$.meal = hotels.meal
